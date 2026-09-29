@@ -1,0 +1,30 @@
+# ---- Datasets: not committed, re-downloadable with `python3 scripts/fetch_data.py`
+data/*
+!data/README.md
+
+# ---- Jupyter
+.ipynb_checkpoints/
+**/.ipynb_checkpoints/
+
+# ---- Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# ---- Model checkpoints / large artefacts
+*.pt
+*.pth
+*.ckpt
+*.npz
+
+# ---- macOS / editors
+.DS_Store
+.vscode/
+.idea/
+
+# ---- Leftover empty folders from the pre-repo layout
+datasets/
+housedata/
+Untitled Folder/

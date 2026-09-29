@@ -1,0 +1,8 @@
+# Python 3.9+ (currently running 3.9.6)
+torch>=2.8
+torchvision>=0.23
+numpy>=2.0
+pandas
+scikit-learn
+matplotlib
+jupyter
