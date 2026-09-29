@@ -2,7 +2,7 @@
 
 > **How to use this file:** paste it whole into the first message of a Claude chat, with
 > a line saying what I want to work on today. Repo: `ml-journey` (private).
-> Last updated: **2026-09-29**.
+> Last updated: **2026-09-29**. Roadmap: `learning/ROADMAP.md`. Log: `learning/LOG.md`.
 
 ---
 
@@ -35,18 +35,20 @@ drop the coaching and answer directly. I will say so when I mean it.
 
 ## 2. About me
 
-- Learning ML seriously by self-study; I work in Jupyter notebooks and PyTorch on a Mac
-  (MPS, no CUDA). Python 3.9, torch 2.8.
-- Comfortable writing code. My gap is theory depth, not syntax.
-- **My goal:** _[fill in — research? ML engineering job? a specific project? a deadline?]_
-- **Maths background:** _[fill in — how far I got in linear algebra, probability,
-  optimisation. This matters: it tells you whether to write ∂L/∂W or explain it in words.]_
-- **Time per week:** _[fill in]_
-- Answer me in _[English / French — pick one and delete the other]_.
+- Engineering student. Learning ML seriously by self-study, ~10 h/week, on a plan that
+  runs October 2026 → February 2027 (`learning/ROADMAP.md`).
+- **Goal:** research in ML applied to biomedical and clinical data — a research
+  internship, then a PhD. Depth over breadth; evaluation I can defend to a reviewer, not
+  a leaderboard score.
+- **Maths:** solid prépa-level linear algebra, probability and optimisation. Write
+  ∂L/∂W at me directly — no refreshers, no analogies where an equation is clearer.
+- Comfortable writing code. My gap is theory depth and research rigour, not syntax.
+- Jupyter + PyTorch on a Mac (MPS, no CUDA), environment managed by `uv`.
+- Answer me in English.
 
 ## 3. What I have already built (so don't re-explain these)
 
-From `02-zero-to-hero/`, all written from scratch before using the library version:
+From `notebooks/02-zero-to-hero/`, all written from scratch before using the library version:
 
 | Built | Means I already understand |
 | --- | --- |
@@ -57,14 +59,14 @@ From `02-zero-to-hero/`, all written from scratch before using the library versi
 | `makemore_torch.py` — same net in real PyTorch | `nn.Module`, `DataLoader`, AdamW + LR scheduler, grad clipping, checkpointing, device handling |
 | `hparam_tuning.py` + `plots/` | LR range test, LR curves, capacity sweeps, train/dev gap, random search |
 
-From `01-handson-ml/` (earlier, scikit-learn on tabular data): `housing.ipynb`,
+From `notebooks/01-handson-ml/` (earlier, scikit-learn on tabular data): `housing.ipynb`,
 `classification.ipynb` (MNIST KNN + GridSearchCV, Titanic), `house-prices-kaggle.ipynb`.
 
 ## 4. Exactly where I am
 
 **Karpathy Zero to Hero, video 6 (nanoGPT), part-way.**
 
-`02-zero-to-hero/nano-gpt/train.ipynb` currently has: char-level encode/decode,
+`notebooks/02-zero-to-hero/nano-gpt/train.ipynb` currently has: char-level encode/decode,
 90/10 split, `get_batch`, a `BigramLanguageModel` with token **and** position embeddings
 into a linear head, `generate()`, AdamW training loop.
 
@@ -84,7 +86,7 @@ thing I want to understand, from first principles, not by copying the video.
 
 ## 6. How to shape your answers
 
-- Reference my files by path (`02-zero-to-hero/makemore_rnn.ipynb`) — I have them open.
+- Reference my files by path (`notebooks/02-zero-to-hero/makemore_rnn.ipynb`) — I have them open.
 - Anchor new ideas to something I already built: "this is your `BatchNorm1D`, except…".
 - Use `(B, T, C)` shape annotations, as in my code.
 - Code snippets ≤ 15 lines, and leave the interesting line as `# ???` for me to fill.
@@ -92,5 +94,5 @@ thing I want to understand, from first principles, not by copying the video.
 
 ## 7. Keeping this file honest
 
-After a real session I update §4 and §5, and add an entry to `PROGRESS.md`. If §4 says
+After a real session I update §4 and §5, and add an entry to `learning/LOG.md`. If §4 says
 something that contradicts code I paste you, trust the code and tell me this file is stale.

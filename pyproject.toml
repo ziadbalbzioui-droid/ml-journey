@@ -1,0 +1,26 @@
+[project]
+name = "mlj"
+version = "0.1.0"
+description = "ML self-study: from-scratch implementations, experiments, biomedical ML projects"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+    "torch>=2.8",
+    "numpy>=2.0",
+    "pandas>=2.2",
+    "scikit-learn>=1.5",
+    "matplotlib>=3.9",
+    "jupyterlab>=4.2",
+]
+
+[dependency-groups]
+dev = ["ruff>=0.6"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mlj"]
+
+[tool.ruff]
+line-length = 100

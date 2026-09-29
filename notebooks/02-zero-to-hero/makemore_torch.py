@@ -15,7 +15,7 @@ from torch.utils.data import TensorDataset, DataLoader
 
 torch.manual_seed(1337)
 DEV = "mps" if torch.backends.mps.is_available() else "cpu"
-DATA = Path(__file__).resolve().parents[1] / "data"
+DATA = Path(__file__).resolve().parents[2] / "data"
 
 # ---------------------------------------------------------------- data
 BLOCK = 8

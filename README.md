@@ -1,69 +1,56 @@
 # ml-journey
 
-My machine-learning self-study, in one place: the code I write while learning, the
-experiments I run, a dated progress log, and the context file I paste into Claude chat
-so it always knows where I am.
+Machine-learning self-study, aimed at research on biomedical and clinical data.
+Plan, code, experiments, and an honest record of what I do not yet understand.
 
-Two tracks so far — classical ML on tabular data (Géron, *Hands-On ML*), then neural
-nets from scratch (Karpathy, *Zero to Hero*).
+October 2026 → February 2027, ~10 h/week. Plan: [learning/ROADMAP.md](learning/ROADMAP.md).
 
-## Map
+## Layout
 
 ```
-01-handson-ml/            classical ML, scikit-learn, tabular data
-├── housing.ipynb             California housing — EDA, regression
-├── classification.ipynb      MNIST (KNN + GridSearchCV) and Titanic
-└── house-prices-kaggle.ipynb Kaggle House Prices — NaN handling, feature prep
-
-02-zero-to-hero/          neural nets built by hand, then in PyTorch
-├── micrograd.ipynb           scalar autograd engine + MLP, backprop written by hand
-├── makemore.ipynb            bigram character model (counts, then gradient descent)
-├── makemore_mpl.ipynb        MLP character model (Bengio 2003 style)
-├── makemore_rnn.ipynb        hand-rolled Linear / BatchNorm1D / Tanh / Embedding /
-│                             FlattenConsecutive — hierarchical WaveNet-style net
-├── makemore_torch.py         the same WaveNet rewritten with real nn.Modules + AdamW
-├── hparam_tuning.py          LR range test, LR curves, capacity, train/dev gap,
-│                             random search → plots/
-├── plots/                    output of hparam_tuning.py (committed: they are results)
-└── nano-gpt/train.ipynb      transformer from scratch on tinyshakespeare (in progress)
-
-scratch/                  throwaway experiments
-scripts/fetch_data.py     re-downloads every dataset into data/
-data/                     gitignored — see data/README.md
-PROGRESS.md               dated log: what I built, what clicked, what is still unclear
-CLAUDE_CONTEXT.md         paste this into Claude chat at the start of a session
+CLAUDE.md                 rules for Claude Code working in this repo
+learning/
+├── ROADMAP.md            month-by-month plan, ending on clinical ML
+├── LOG.md                session log: did / understood / still shaky / next
+├── chat-context.md       paste into claude.ai to bring a chat up to speed
+└── concepts/             one short note per concept
+notebooks/
+├── 01-handson-ml/        scikit-learn on tabular data (Géron)
+├── 02-zero-to-hero/      micrograd → makemore → nanoGPT (Karpathy)
+└── scratch/              throwaway
+src/mlj/                  reusable code — `scratch/` (NumPy from scratch), `eval/` (harness)
+projects/                 self-contained projects, one folder each
+scripts/fetch_data.py     re-downloads the datasets
+data/                     gitignored
 ```
 
 ## Setup
 
 ```bash
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-python3 scripts/fetch_data.py     # pulls the datasets into data/
+uv sync                               # .venv from pyproject.toml, installs mlj editable
+uv run python scripts/fetch_data.py   # datasets into data/
+uv run jupyter lab
 ```
 
-Kaggle House Prices needs a Kaggle login — `fetch_data.py` prints where to put it.
-
-Notebooks read data through relative paths (`../data/...`), so run them from their own
-folder. The two `.py` scripts resolve `data/` from their own location, so they run from
-anywhere:
+Kaggle House Prices needs a Kaggle login; `fetch_data.py` prints where to put it.
+Notebooks read `../../data/...`, so run them from their own folder.
 
 ```bash
-python3 02-zero-to-hero/hparam_tuning.py     # regenerates plots/
-python3 02-zero-to-hero/makemore_torch.py
+uv run python notebooks/02-zero-to-hero/hparam_tuning.py    # regenerates plots/
 ```
 
-## Working with Claude
+## How this repo is used
 
-- **Claude chat (learning):** paste [`CLAUDE_CONTEXT.md`](CLAUDE_CONTEXT.md) into a new
-  chat. It tells Claude how far I am, how I want to be taught (coach, not code
-  dispenser), and what I am stuck on.
-- **After a session:** add an entry to [`PROGRESS.md`](PROGRESS.md) and update the
-  "where I am / what I'm stuck on" sections of `CLAUDE_CONTEXT.md`. Those two files are
-  the whole point of the repo — the code is just the evidence.
+- **Claude Code**, in the repo: reads [CLAUDE.md](CLAUDE.md) — teach before solving,
+  NumPy before libraries, flag shallow understanding, log and commit at the end of every
+  session.
+- **claude.ai chat**, for learning: paste [learning/chat-context.md](learning/chat-context.md)
+  into the first message.
+- **Me**, every session: one entry in [learning/LOG.md](learning/LOG.md), one commit.
 
-## Rules I try to hold myself to
+## Principles
 
-1. Write it from scratch once before importing the library version.
-2. Every notebook ends with something that runs and produces a sample or a number.
-3. If I cannot explain a line to someone else, I have not learned it yet.
+1. Implement it from scratch once before importing the library version.
+2. A concept is not learned until there is a note in `learning/concepts/` for it.
+3. Every model gets its baseline, its calibration, and its confidence interval — or it
+   does not get reported.

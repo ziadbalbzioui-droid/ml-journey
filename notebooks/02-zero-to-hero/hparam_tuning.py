@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 torch.set_num_threads(8)
 
 # paths are resolved from this file, so the script runs from any cwd
-DATA = Path(__file__).resolve().parents[1] / "data"
+DATA = Path(__file__).resolve().parents[2] / "data"
 PLOTS = Path(__file__).resolve().parent / "plots"
 PLOTS.mkdir(exist_ok=True)
 
