@@ -1,199 +1,211 @@
-# Roadmap — October 2026 → February 2027
+# Roadmap — 5 Oct 2026 → 28 Feb 2027 (21 weeks)
 
-~10 h/week. Target: research-grade ML on biomedical and clinical data. Depth over
-breadth — one theme per month, one thing that runs, one proof I understood it.
+Rewritten on 2026-09-30 after the diagnostic test (see `LOG.md`, entry of that date).
 
-| Month | Theme | Deliverable |
-| --- | --- | --- |
-| Oct | Finish the transformer + training craft | char-GPT that writes readable text, attention in NumPy |
-| Nov | Statistical learning + honest evaluation | `src/mlj/eval/` harness (CV, bootstrap CI, calibration) |
-| Dec | Clinical tabular ML, done properly | MIMIC-IV demo project + model card + TRIPOD checklist |
-| Jan | Time series & sequences in medicine | early-warning model with time-aware validation |
-| Feb | Interpretability, robustness, research move | 2-page research proposal + portfolio repo |
+**Level, honestly:** strong maths (calculus, linear algebra), beginner in classical ML. I have
+*followed* micrograd → makemore → nanoGPT, but the diagnostic showed I cannot yet write the
+basic formulas from memory (normal equation, gradient-descent update, cross-entropy) and I
+mix up some vocabulary (embeddings vs logits). So the plan starts from the foundations,
+from scratch, and every week ends with a closed-book exit check.
 
-Rule for every month: **theory in the morning, code in the evening, one concept note per
-week** in `concepts/`. If a month slips, cut the practice, never the deliverable.
+**Goal:** arrive at the Stanford research position in March 2027 able to build, evaluate and
+explain models on tabular and longitudinal data, including gradient boosting (XGBoost),
+and defend the evaluation in front of a reviewer.
 
----
+**Budget:** ~10 h/week. Minimum viable week = 6 h: theory prep + one build session + the exit
+check. Split of a normal week and the exact prompts: [WORKFLOW.md](WORKFLOW.md).
 
-## October 2026 — Finish the transformer, master the training loop
+**Tools:** *Claude Code* (in this repo) builds, runs, tests, reviews, commits and logs.
+*Claude chat* (the "AI/ML preparation" Project, connected to this repo on GitHub) handles
+theory, derivations, oral exams and paper reading.
 
-Picking up exactly where I stopped: `nano-gpt/train.ipynb` has token + position
-embeddings and a linear head, and no attention yet.
+## Overview
 
-**Theory**
-- Self-attention: why query·key, why `/√d_k`, what the causal `tril` mask enforces.
-- Multi-head attention: why several small heads beat one big one.
-- Residual connections and LayerNorm — and how LayerNorm differs from the `BatchNorm1D`
-  I hand-rolled in `makemore_rnn.ipynb` (per-sample vs per-batch, train/eval behaviour).
-- Optimisation craft: AdamW, warmup + cosine schedules, initialisation scaling, why deep
-  nets need residuals to train at all.
+| Phase | Weeks | Theme | Main deliverable |
+| --- | --- | --- | --- |
+| 1 | W1–W4 (Oct) | Foundations from scratch | `src/mlj/scratch/` linear + logistic + ridge, `mlj/metrics.py` |
+| 2 | W5–W7 (Nov) | Trees, boosting, **XGBoost** | from-scratch tree + GBM + XGBoost-lite, checked against the library |
+| 3 | W8–W10 (Nov–Dec) | Attention and the transformer | gradient-checked attention in NumPy + char-GPT |
+| 4 | W11–W16 (Dec–Jan) | Honest evaluation + a tabular project | `src/mlj/eval/` + `projects/tabular-clinical/` report |
+| 5 | W17–W19 (Jan–Feb) | Time, survival, interpretability, clinical data | time-aware split, SHAP notes, one survival comparison |
+| 6 | W20–W21 (Feb) | Lab-facing work | paper notes, final diagnostic, repo clean-up |
 
-**Practice**
-- Finish nanoGPT: `Head` → `MultiHeadAttention` → `FeedForward` → `Block` → full GPT.
-- One attention head in **pure NumPy**, forward *and* backward, checked against a
-  numerical gradient. This is the from-scratch requirement for the month.
-- Ablations: remove `/√d_k`, remove residuals, remove LayerNorm. Predict each effect in
-  writing *before* running it.
+XGBoost is a three-week module (W5–W7) and is then reused as one of the models in W14–W18.
 
-**Deliverable** — a char-GPT trained on tinyshakespeare producing text that scans as
-English, plus `src/mlj/scratch/attention.py` (gradient-checked) and
-`concepts/self-attention.md`.
+## Diagnostic gaps → where they get fixed
 
-**Proof of understanding** — on paper, no notes: derive the shapes through one attention
-block from `(B, T, C)`, and derive the gradient of softmax. Then explain why the
-√d_k scaling matters more as `d_k` grows, and show the ablation numbers that confirm it.
+| Gap seen on 2026-09-30 | Fixed in |
+| --- | --- |
+| Normal equation, singular `XᵀX` (Q6) | W1 |
+| Gradient-descent update on parameters (Q11) | W2 |
+| Binary cross-entropy, softmax+CE gradient `p − y` (Q7, Q14) | W2 |
+| Backprop vs numerical gradient cost (Q16) | W2 |
+| Ridge as a limit, scaling per model (Q4, Q10) | W3 |
+| Why tuning on test breaks validity, overfitting causes (Q1, Q2) | W3–W4 |
+| Decision-tree splits, KNN in high dimension (Q8, Q9) | W5 |
+| Initial loss of a uniform softmax (Q18) | W2 |
+| Saturation vs "dead neuron", BatchNorm train/eval (Q19, Q20) | W9–W10 |
+| Embedding table vs logits (Q21) | W8 |
+| Residual connections (Q22) | W9 |
+| Sections E–H never taken (evaluation, code, theory link, stretch) | first taken in W4, retaken W12, W21 |
 
-**Resources**
-- Karpathy, *Let's build GPT: from scratch, in code, spelled out* — https://www.youtube.com/watch?v=kCc8FmEb1nY
-- Vaswani et al., *Attention Is All You Need* — https://arxiv.org/abs/1706.03762
-- *The Annotated Transformer* (Harvard NLP) — https://nlp.seas.harvard.edu/annotated-transformer/
+## Every week
 
----
-
-## November 2026 — Statistical learning and evaluation I can defend
-
-The month that turns me from someone who trains models into someone who can referee one.
-
-**Theory**
-- Bias–variance, and what regularisation really is: derive ridge as MAP with a Gaussian
-  prior, lasso as Laplace. MLE vs MAP vs full Bayes.
-- Cross-validation done right: stratified, grouped, nested CV; why tuning on the test set
-  inflates everything.
-- Uncertainty: bootstrap confidence intervals on a metric.
-- Metrics under class imbalance: ROC vs precision–recall, PPV/NPV and their dependence on
-  prevalence, proper scoring rules (log-loss, Brier), calibration and why it is the thing
-  clinicians actually need.
-
-**Practice**
-- NumPy from scratch: linear regression (closed form *and* gradient descent), ridge,
-  logistic regression. Then check each against scikit-learn — same coefficients or bust.
-- Build the evaluation harness I will reuse for the rest of the roadmap.
-
-**Deliverable** — `src/mlj/eval/`: stratified & grouped CV splitters, bootstrap CIs,
-ROC/PR curves, calibration curve + Brier score decomposition, with unit tests. Demoed on
-one public clinical tabular dataset.
-
-**Proof of understanding** — take a model with AUROC 0.92 on a condition with 2%
-prevalence, and compute by hand the PPV at the threshold I would deploy. Explain in three
-sentences why that model may still be useless, and what I would report instead. Rederive
-ridge from the MAP argument without notes.
-
-**Resources**
-- Hastie, Tibshirani, Friedman, *The Elements of Statistical Learning*, ch. 3 & 7 — https://hastie.su.domains/ElemStatLearn/
-- Van Calster et al., *Calibration: the Achilles heel of predictive analytics* (BMC Medicine, 2019) — https://bmcmedicine.biomedcentral.com/articles/10.1186/s12916-019-1466-7
-- Guo et al., *On Calibration of Modern Neural Networks* (2017) — https://arxiv.org/abs/1706.04599
+- **Mon** — chat: theory prep (3 questions that find the gap, then the derivation).
+- **Mon–Tue** — the resource of the week.
+- **Tue–Thu** — Claude Code: build session(s), with the prediction question before any code.
+- **Fri** — chat: oral exit check, closed book.
+- **Sat** — concept note in `learning/concepts/`, `LOG.md` entry, commit, push.
 
 ---
 
-## December 2026 — Clinical tabular ML, done properly
+# Phase 1 — Foundations from scratch (October)
 
-Real clinical data. On tabular clinical problems, gradient boosting and a well-specified
-logistic regression are the baselines to beat — and usually they win.
+## W1 · 5–11 Oct · Linear regression
+- **Theory (chat):** model, MSE, the normal equation `w = (XᵀX)⁻¹Xᵀy` with shapes `(n,d)`, projection view, when `XᵀX` is singular (collinear columns, `n < d`).
+- **Build (Claude Code):** `src/mlj/scratch/linear.py` with `fit_normal_eq` and `fit_gd`. Check against scikit-learn `LinearRegression` on California housing (you already loaded it). Add a test that reproduces the singular case.
+- **Resources:** ISLP ch. 3 (free PDF: https://www.statlearning.com).
+- **Exit check:** write the normal equation with shapes from memory and explain the singular case (Q6).
 
-**Theory**
-- Missing data: MCAR / MAR / MNAR, why "impute with the mean" can encode the outcome,
-  and why *missingness itself* is often the strongest predictor in clinical data.
-- Leakage: patient-level vs row-level splits, temporal splits, site splits, and features
-  that only exist after the outcome (treatment codes, discharge fields).
-- How trees and boosting actually work: splitting criteria, gradient boosting as gradient
-  descent in function space.
-- Reporting standards: TRIPOD+AI — what a reviewer expects to see.
+## W2 · 12–18 Oct · Gradient descent and logistic regression
+- **Theory (chat):** update `w ← w − α ∂L/∂w` on parameters, too-large vs too-small `α`, minibatch vs full batch; sigmoid; Bernoulli negative log-likelihood = binary cross-entropy; derive softmax + cross-entropy gradient `p − y`; why that makes a uniform-softmax initial loss `log C`.
+- **Build:** `logistic.py` (binary + softmax regression, NumPy), `gradcheck.py` (numerical vs analytic gradient), a learning-rate sweep plot showing slow / good / diverging.
+- **Resources:** Andrew Ng, *Machine Learning Specialization* course 1 (https://www.coursera.org/specializations/machine-learning-introduction); 3Blue1Brown neural-network series for intuition (https://www.3blue1brown.com/topics/neural-networks).
+- **Exit check:** derive `p − y`, compute the `z = [0,0,0]` case by hand, write the BCE formula, explain why backprop beats finite differences in number of forward passes (Q7, Q11, Q14, Q16, Q18).
 
-**Practice**
-- From scratch: a regression tree, then gradient boosting on top of it, in NumPy.
-- Then the real thing: scikit-learn `HistGradientBoosting` / XGBoost vs a regularised
-  logistic regression, on MIMIC-IV demo. Grouped splits by patient, always.
+## W3 · 19–25 Oct · Regularisation and bias–variance
+- **Theory (chat):** bias–variance, ridge closed form `(XᵀX + λI)⁻¹Xᵀy` and why it is invertible, lasso sparsity, intercept not penalised, why feature scaling matters for ridge and KNN but not trees.
+- **Build:** ridge in NumPy, regularisation-path plot, learning curves (error vs training size) on housing; compare to `Ridge` / `Lasso`.
+- **Resources:** ISLP ch. 5–6.
+- **Exit check:** Q3, Q4 (including `λ → ∞` and the intercept), Q10 with a reason per model.
 
-**Deliverable** — `projects/clinical-tabular/`: in-hospital mortality (or readmission)
-prediction on the MIMIC-IV demo, with grouped splits, calibration, bootstrap CIs, a model
-card, and a filled TRIPOD+AI-style checklist. Written as a short report, not a notebook dump.
+## W4 · 26 Oct–1 Nov · Evaluation basics + Phase 1 review
+- **Theory (chat):** why three splits, optimism from tuning on test, k-fold CV, confusion matrix, precision/recall, AUROC as the probability a random positive outranks a random negative, PPV vs prevalence via Bayes.
+- **Build:** `src/mlj/metrics.py` (confusion metrics, ROC/AUC from ranks), a from-scratch k-fold splitter, and a demo of the scaler-before-split leak (Q32).
+- **Resources:** ISLP ch. 5; StatQuest videos on ROC/AUC and cross-validation (https://www.youtube.com/@statquest).
+- **Exit check:** retake diagnostic sections A–D closed book (target ≥ 80 %), and take E–H for the first time as a baseline.
 
-**Proof of understanding** — I ask Claude to plant three leaks in my pipeline. I find all
-three and quantify how much optimism each one buys. Then: explain why my boosted model
-beat logistic regression, or admit it did not and say what that tells me about the data.
+# Phase 2 — Trees, boosting and XGBoost (November)
 
-**Resources**
-- MIMIC-IV Clinical Database Demo (PhysioNet, open access) — https://physionet.org/content/mimic-iv-demo/
-- Collins et al., *TRIPOD+AI statement* (BMJ, 2024) — https://www.bmj.com/content/385/bmj-2023-078378
-- Kaufman et al., *Leakage in Data Mining* (2012) — https://dl.acm.org/doi/10.1145/2382577.2382579
+## W5 · 2–8 Nov · Decision trees and random forests
+- **Theory (chat):** impurity (Gini, entropy, variance), greedy split search, why deep trees overfit, scale invariance; bagging, the variance of an average of correlated estimators `ρσ² + (1−ρ)σ²/B`, feature subsampling, out-of-bag error; KNN and the curse of dimensionality.
+- **Build:** `scratch/tree.py` (regression + classification, exact greedy split) and `scratch/forest.py`; match scikit-learn trees at equal depth.
+- **Resources:** ISLP ch. 8; StatQuest "Decision Trees" and "Random Forests".
+- **Exit check:** compute the best split by hand on 6 points; explain why feature subsampling lowers `ρ` (Q8, Q9).
+
+## W6 · 9–15 Nov · Gradient boosting from scratch
+- **Theory (chat):** boosting as gradient descent in function space: each tree fits the negative gradient (residuals for MSE, `p − y` for logistic loss), shrinkage, `n_estimators` vs learning rate.
+- **Build:** `scratch/gbm.py` with squared then logistic loss on your own tree; train/validation curve vs number of trees; compare with scikit-learn `GradientBoosting`.
+- **Resources:** StatQuest Gradient Boost series; https://explained.ai/gradient-boosting/; Friedman (2001), *Greedy function approximation* (skim).
+- **Exit check:** predict, before running, the effect of learning rate 1.0 vs 0.1; explain "fit residuals" = "fit negative gradient".
+
+## W7 · 16–22 Nov · XGBoost
+- **Theory (chat):** the regularised objective `Ω = γT + ½λ‖w‖²`, second-order Taylor expansion with `gᵢ, hᵢ`, optimal leaf weight `w* = −G/(H+λ)`, split gain with `γ`, `min_child_weight`, sparsity-aware handling of missing values, column/row subsampling.
+- **Build:** `scratch/xgb_lite.py` (your tree with `g, h, λ, γ`), checked against the `xgboost` library (`tree_method="exact"`, same parameters) on toy data. Then `notebooks/03-tabular/xgb_benchmark.ipynb`: logistic regression vs random forest vs XGBoost under the same CV on three public datasets, with early stopping and random-search tuning. Add the library with `uv add xgboost`.
+- **Resources:** Chen & Guestrin (2016), https://arxiv.org/abs/1603.02754 (sections 2–3); the docs page "Introduction to Boosted Trees" (https://xgboost.readthedocs.io); StatQuest XGBoost series.
+- **Exit check:** derive `w*` and the gain on paper; for an overfitting model, name three hyperparameters to change and the direction of each. Tag the repo `phase-2`.
+
+# Phase 3 — Attention and the transformer (Nov–Dec)
+
+Picks up `notebooks/02-zero-to-hero/nano-gpt/train.ipynb` exactly where it stopped.
+
+## W8 · 23–29 Nov · Self-attention
+- **Theory (chat):** embeddings (input vectors, row lookup in a `(V, d)` table) vs logits (output scores); `q @ kᵀ` shapes `(B, T, hs)`, why `/√hs`, what the causal `tril` mask enforces (applied before softmax, with `−inf`).
+- **Build:** one attention head in **pure NumPy**, forward and backward, checked with `gradcheck.py`: `src/mlj/scratch/attention.py`. Then write `Head` in the notebook.
+- **Resources:** Karpathy, *Let's build GPT* (https://www.youtube.com/watch?v=kCc8FmEb1nY); Vaswani et al. (https://arxiv.org/abs/1706.03762).
+- **Exit check:** derive the shapes through one head and the variance of `q·k` with and without the scaling (Q21, Q37–39).
+
+## W9 · 30 Nov–6 Dec · Multi-head, residuals, LayerNorm
+- **Theory (chat):** why several small heads; residual connection gradient `∂y/∂x = I + ∂F/∂x`; LayerNorm vs the `BatchNorm1D` you wrote (per-sample vs per-batch, running statistics); tanh saturation vs dead ReLU.
+- **Build:** `MultiHeadAttention`, `FeedForward`, `Block`, full GPT in the notebook.
+- **Resources:** *The Annotated Transformer* (https://nlp.seas.harvard.edu/annotated-transformer/).
+- **Exit check:** Q19, Q20, Q22 closed book.
+
+## W10 · 7–13 Dec · Training craft and ablations
+- **Theory (chat):** AdamW, warmup + cosine, initialisation scale, what the loss curve should look like.
+- **Build:** train a char-GPT on tinyshakespeare until the text is readable. Ablations: no `/√d`, no residuals, no LayerNorm. **Write the prediction for each before running.**
+- **Resources:** Karpathy, *A Recipe for Training Neural Networks* (https://karpathy.github.io/2019/04/25/recipe/); Zero to Hero index (https://karpathy.ai/zero-to-hero.html).
+- **Exit check:** ablation table with predicted vs observed, and a short explanation of each mismatch. Write `concepts/self-attention.md`.
+
+# Phase 4 — Honest evaluation and a tabular project (Dec–Jan)
+
+## W11 · 14–20 Dec · Cross-validation done right + bootstrap
+- **Theory (chat):** stratified, grouped and nested CV; why rows from the same patient or group leak (Q26); bootstrap percentile confidence intervals on a metric.
+- **Build:** `src/mlj/eval/splits.py` and `bootstrap.py` with pytest tests; a synthetic demo where a row-level split looks good and a group-level split does not.
+- **Resources:** scikit-learn docs, "Cross-validation: evaluating estimator performance"; Varoquaux, *Cross-validation failure: small sample sizes lead to large error bars* (search the title).
+- **Exit check:** Q26, Q27, Q29; explain in three sentences why grouped CV is required.
+
+## W12 · 21–27 Dec (light week, ~5 h) · Calibration and thresholds
+- **Theory (chat):** calibration, reliability curve, Brier score, log loss as proper scoring rules; XGBoost probabilities are often miscalibrated; choosing a threshold from cost or PPV.
+- **Build:** `src/mlj/eval/calibration.py` (reliability curve, Brier, ECE); calibrate an XGBoost model on a held-out fold and plot before/after.
+- **Resources:** Van Calster et al. (2019), https://bmcmedicine.biomedcentral.com/articles/10.1186/s12916-019-1466-7; scikit-learn calibration docs.
+- **Exit check:** retake sections E (Q23–29) closed book, target ≥ 80 %.
+
+## W13 · 28 Dec–3 Jan (light week, ~5 h) · Project setup
+- **Theory (chat):** missing data (MCAR / MAR / MNAR), the catalogue of leaks (row-level, temporal, post-outcome features), fixing the target and the prediction time before looking at any model.
+- **Build:** `projects/tabular-clinical/`. Dataset: UCI *Diabetes 130-US hospitals* (30-day readmission), which has a patient id for grouped splits — Claude Code verifies the link and licence in this session. Write a data card, EDA, and a README stating question, target, unit of analysis and split protocol. **Lock the test set before any modelling.**
+- **Resources:** Kaufman et al. (2012), *Leakage in Data Mining* (https://dl.acm.org/doi/10.1145/2382577.2382579).
+- **Exit check:** ask Claude Code to review the README as a skeptical reviewer and list three leak risks; fix them.
+
+## W14 · 4–10 Jan · Models and confidence intervals
+- **Theory (chat):** what a fair baseline is (majority class, regularised logistic regression), tuning only inside the training folds.
+- **Build:** logistic regression, random forest and XGBoost under grouped, nested CV with `mlj.eval`; results table with bootstrap CIs. Predict which model wins, and by how much, before running.
+- **Resources:** XGBoost docs (parameters page, early stopping).
+- **Exit check:** table with CIs committed, and the prediction-vs-result note.
+
+## W15 · 11–17 Jan · Finish the project
+- **Theory (chat):** reporting standards (TRIPOD+AI idea), model cards.
+- **Build:** calibration, threshold analysis and subgroup metrics (age, sex, admission type). **Leak audit:** Claude Code plants two leaks on a branch; I find them and quantify the optimism each one buys. Write a 2-page report and a model card.
+- **Resources:** TRIPOD+AI (https://www.bmj.com/content/385/bmj-2023-078378); Mitchell et al., *Model Cards for Model Reporting* (2019).
+- **Exit check:** both leaks found with numbers; report committed. Tag `phase-4`.
+
+## W16 · 18–24 Jan · Neural nets on tabular data (exam-risk week)
+Check your exam calendar now. If this is exam season, do only the exit check and treat the rest as buffer.
+- **Theory (chat):** why tree ensembles often beat MLPs on medium-size tabular data (irregular target functions, uninformative features, rotation invariance).
+- **Build:** a PyTorch MLP on the project data (reuse the loop from `makemore_torch.py`) vs XGBoost under the same grouped CV.
+- **Resources:** Grinsztajn et al. (2022), *Why do tree-based models still outperform deep learning on typical tabular data?* (https://arxiv.org/abs/2207.08815).
+- **Exit check:** explain, with evidence from my own run, why the MLP lost or won.
+
+# Phase 5 — Time, interpretability, clinical data (Jan–Feb)
+
+## W17 · 25–31 Jan · Time-aware validation and survival
+- **Theory (chat):** temporal leakage, forward-chaining splits, prediction horizon; censoring, Kaplan–Meier, Cox proportional hazards, concordance index.
+- **Build:** a time-aware splitter in `mlj/eval/`; on the `lifelines` built-in Rossi dataset fit Kaplan–Meier and Cox, then XGBoost with the `survival:cox` objective, and compare concordance.
+- **Resources:** https://lifelines.readthedocs.io/ ; the XGBoost survival tutorials in the docs.
+- **Exit check:** explain why random K-fold is wrong for time-ordered data; define the concordance index.
+
+## W18 · 1–7 Feb · Interpretability
+- **Theory (chat):** gain/cover importances and why they mislead, permutation importance, PDP/ICE, Shapley values and TreeSHAP, the correlated-feature problem, association vs causation.
+- **Build:** SHAP on the project's XGBoost model vs permutation importance; inject a proxy feature and confirm it dominates; write a one-page "what SHAP can and cannot say".
+- **Resources:** Molnar, *Interpretable Machine Learning* (https://christophm.github.io/interpretable-ml-book/); Lundberg & Lee (2017), https://arxiv.org/abs/1705.07874; `shap` docs.
+- **Exit check:** given a confident SHAP story, name a non-causal mechanism that could produce it.
+
+## W19 · 8–14 Feb · Clinical data and robustness
+- **Theory (chat):** what EHR data looks like (labs, vitals, codes, irregular sampling), informative missingness, distribution shift, subgroup performance.
+- **Build:** a missingness experiment on the project data (simulate MCAR vs MNAR and watch XGBoost's native handling); a subgroup dashboard.
+- **Resources:** MIMIC-IV demo documentation (https://physionet.org/content/mimic-iv-demo/).
+- **Exit check:** explain informative missingness with a clinical example in my own words.
+
+# Phase 6 — Lab-facing work (February)
+
+## W20 · 15–21 Feb · Read the lab
+- **Theory (chat):** collect four or five recent papers from the lab's publication page; structured reading (question, data, method, evaluation, limitations); list the methods I do not know.
+- **Build:** in `projects/lab-replication/`, reproduce one baseline or key figure from a paper with public data, or from an analogous public dataset.
+- **Resources:** Keshav, *How to Read a Paper*.
+- **Exit check:** one page per paper with three questions to ask the lab.
+
+## W21 · 22–28 Feb · Consolidate
+- **Build:** clean the repo so a PI can read it in ten minutes; update `chat-context.md`; write the handoff note (still-shaky list, questions for the lab).
+- **Exit check:** retake the full diagnostic A–H closed book and compare with 2026-09-30. Commit the score report in `LOG.md`. Tag `phase-6`.
 
 ---
 
-## January 2027 — Time series and sequences in medicine
+## If a week slips
 
-Vitals and labs arrive irregularly, are censored, and get acted upon. This month is about
-not fooling myself with time.
+1. Cut the practice, never the exit check.
+2. Two slipped weeks in a row → drop W16 and W19 first, then the optional parts of W20.
+3. Never skip the `LOG.md` entry: the *still shaky* list is what drives the next chat session.
+4. Anything in *still shaky* after two weeks becomes the first topic of the next week.
 
-**Theory**
-- Windowing and prediction horizons; temporal leakage; why the prediction time must be
-  fixed before you look at anything.
-- Survival analysis: censoring, Kaplan–Meier, Cox proportional hazards, concordance index
-  — the right frame when the question is *when*, not *whether*.
-- Sequence models for clinical series: GRU/LSTM, temporal convolutions, and transformers
-  on irregular data; how masking and resampling change the problem.
-- Alarm framing: alert rate, PPV at fixed alert rate, alarms per patient-day, alarm fatigue.
-
-**Practice**
-- A GRU cell from scratch in NumPy (forward + backward), then the PyTorch version.
-- A sliding-window dataset with strict time-aware splits.
-- A Cox model with `lifelines` on the same cohort, for contrast.
-
-**Deliverable** — `projects/early-warning/`: deterioration or sepsis early-warning model
-from vital signs, evaluated with time-aware validation, reported as PPV and alarms per
-patient-day at a clinically plausible alert rate, with calibration checked over time.
-
-**Proof of understanding** — defend one operating point to an imaginary ICU nurse:
-why this threshold, how many false alarms per shift, what happens to the miss rate if she
-asks for half the alarms. Explain why AUROC is the wrong headline number here.
-
-**Resources**
-- PhysioNet/CinC 2019 Challenge: *Early Prediction of Sepsis* — https://physionet.org/content/challenge-2019/
-- Harutyunyan et al., *Multitask learning and benchmarking with clinical time series* — https://arxiv.org/abs/1703.07771
-- `lifelines` documentation (survival analysis in Python) — https://lifelines.readthedocs.io/
-
----
-
-## February 2027 — Interpretability, robustness, and the move to research
-
-Turning five months of work into something a lab would take seriously.
-
-**Theory**
-- Permutation importance, PDP/ICE, SHAP — and precisely where each one lies: correlated
-  features, off-manifold sampling, causal misreading of an associational explanation.
-- Counterfactual explanations; inherently interpretable models as the alternative.
-- Shortcut learning: models that solve the dataset instead of the task.
-- Subgroup and fairness evaluation; performance under distribution shift; uncertainty.
-
-**Practice**
-- SHAP on the December and January models; check whether the top features are clinically
-  plausible or artefacts of the pipeline.
-- A deliberate shortcut experiment: inject a proxy feature (e.g. a treatment that only
-  happens after diagnosis), confirm it dominates, then find it with the tools above.
-- Subgroup breakdown of every metric: age, sex, care unit.
-
-**Deliverable** — a 2-page research proposal (question, data, method, evaluation plan,
-risks, why it matters clinically) to send with internship applications, plus the repo
-cleaned into something a PI can read in ten minutes, plus one concept note per method.
-
-**Proof of understanding** — I hand you a confident, plausible SHAP story about a feature.
-You refute it: name the mechanism that could produce that pattern without the causal claim,
-and design the experiment that would settle it.
-
-**Resources**
-- Molnar, *Interpretable Machine Learning* (SHAP, PDP, permutation chapters) — https://christophm.github.io/interpretable-ml-book/
-- Rudin, *Stop explaining black box ML models for high stakes decisions* (2019) — https://arxiv.org/abs/1811.10154
-- DeGrave et al., *AI for radiographic COVID-19 detection selects shortcuts over signal* (2021) — https://www.nature.com/articles/s42256-021-00338-7
-
----
-
-## Monthly review (last session of each month, 30 min)
-
-1. Did the deliverable ship? If not, what blocked it — time, or a gap I hid from myself?
-2. Pass the proof-of-understanding check, out loud, no notes.
-3. Re-read **Still shaky** in `LOG.md`: what cleared, what is still there after a month?
-   Anything that survives two months becomes next month's first topic.
-4. Update `chat-context.md` §4 and §5, then commit.
-
-This roadmap is a plan, not a contract. If December's data work opens a question worth
-chasing, chase it and rewrite the rest — but write down why in the log.
+This is a plan, not a contract. If something turns up that is worth chasing, chase it and
+rewrite the rest — but write down why in the log.

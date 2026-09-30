@@ -2,7 +2,8 @@
 
 > **How to use this file:** paste it whole into the first message of a Claude chat, with
 > a line saying what I want to work on today. Repo: `ml-journey` (private).
-> Last updated: **2026-09-29**. Roadmap: `learning/ROADMAP.md`. Log: `learning/LOG.md`.
+> Last updated: **2026-09-30**. Roadmap: `learning/ROADMAP.md`. Log: `learning/LOG.md`.
+> Workflow and prompts: `learning/WORKFLOW.md`.
 
 ---
 
@@ -21,6 +22,8 @@ answer handed to me is a loss, not a win.
   smaller numbers. Working code is the last resort, and only if I ask twice.
 - Make me predict before running: "what shape comes out?", "what happens to the loss?".
 - End with one check question I have to answer in my own words.
+- Ask me for a `[1]` guessing / `[2]` fairly sure / `[3]` certain tag on each answer, and
+  point out mismatches between tag and correctness.
 - Correct my vocabulary when I misuse a term (logits vs probabilities, epoch vs step,
   parameters vs hyperparameters). Silently letting it slide costs me later.
 
@@ -35,22 +38,27 @@ drop the coaching and answer directly. I will say so when I mean it.
 
 ## 2. About me
 
-- Engineering student. Learning ML seriously by self-study, ~10 h/week, on a plan that
-  runs October 2026 → February 2027 (`learning/ROADMAP.md`).
+- Engineering student. Learning ML seriously by self-study, ~10 h/week, on a 21-week plan
+  (5 Oct 2026 → 28 Feb 2027, `learning/ROADMAP.md`), ahead of a research position in AI
+  for medicine at Stanford in March 2027.
 - **Goal:** research in ML applied to biomedical and clinical data — a research
   internship, then a PhD. Depth over breadth; evaluation I can defend to a reviewer, not
   a leaderboard score.
 - **Maths:** solid prépa-level linear algebra, probability and optimisation. Write
   ∂L/∂W at me directly — no refreshers, no analogies where an equation is clearer.
-- Comfortable writing code. My gap is theory depth and research rigour, not syntax.
+- Comfortable writing code, but a **beginner in classical ML** (diagnostic of 2026-09-30,
+  see §5): I understand ideas better than I can state them, so make me write the formula
+  or explain the mechanism.
 - Jupyter + PyTorch on a Mac (MPS, no CUDA), environment managed by `uv`.
 - Answer me in English.
 
 ## 3. What I have already built (so don't re-explain these)
 
-From `notebooks/02-zero-to-hero/`, all written from scratch before using the library version:
+From `notebooks/02-zero-to-hero/`, all written from scratch before using the library
+version. I *followed* these videos; whether I understand each row is **unverified** until
+an exit check says so (see §5):
 
-| Built | Means I already understand |
+| Built | Should mean I understand |
 | --- | --- |
 | `micrograd.ipynb` — `Value` class, topological sort, `.backward()` | the chain rule as code, what a computational graph is, why grads accumulate |
 | `makemore.ipynb` — bigram by counting, then by gradient descent | negative log-likelihood, softmax, one-hot, why both routes converge to the same loss |
@@ -64,25 +72,31 @@ From `notebooks/01-handson-ml/` (earlier, scikit-learn on tabular data): `housin
 
 ## 4. Exactly where I am
 
-**Karpathy Zero to Hero, video 6 (nanoGPT), part-way.**
+**Plan week 0 (30 Sep 2026): diagnostic done; W1 starts 5 Oct with linear regression from
+scratch.** Weekly blocks: `learning/ROADMAP.md`. Weekly loop and prompts:
+`learning/WORKFLOW.md`.
 
-`notebooks/02-zero-to-hero/nano-gpt/train.ipynb` currently has: char-level encode/decode,
-90/10 split, `get_batch`, a `BigramLanguageModel` with token **and** position embeddings
-into a linear head, `generate()`, AdamW training loop.
-
-**I have not written self-attention yet.** No `Head`, no `MultiHeadAttention`, no
-`Block`, no LayerNorm, no residual connections. The model still cannot look at previous
-tokens — position embeddings are in there but do nothing useful yet. That is the next
-thing I want to understand, from first principles, not by copying the video.
+The nanoGPT notebook (`notebooks/02-zero-to-hero/nano-gpt/train.ipynb`) is **parked until
+W8**. It has char-level encode/decode, 90/10 split, `get_batch`, a `BigramLanguageModel`
+with token and position embeddings into a linear head, `generate()` and an AdamW loop.
+No self-attention, multi-head, LayerNorm or residuals yet.
 
 ## 5. Known gaps — fair game to probe
 
-- Self-attention: why query·key, why /√d, why the causal mask.
-- LayerNorm vs the BatchNorm I hand-rolled.
-- Residual connections and why deep nets need them.
-- Never built a CNN.
-- Evaluation beyond train/dev loss — metrics, calibration, error analysis.
-- The maths I use by pattern rather than derivation: _[fill in as I notice them]_.
+From the 2026-09-30 diagnostic (sections A–D; E–H not taken yet):
+
+- Normal equation written as `X Xᵀ` (should be `XᵀX`); singular cases.
+- Gradient-descent update written on the loss instead of the parameters.
+- Binary cross-entropy not written from memory; softmax + CE gradient `p − y`.
+- Decision-tree split criterion; KNN in high dimension.
+- Which models care about feature scaling, and why (said "yes" without separating them).
+- Left blank: backprop vs numerical-gradient cost, initial loss of a uniform softmax,
+  residual connections.
+- Vocabulary: saturation vs "dead neuron"; embedding table vs logits; BatchNorm
+  train/eval left unfinished.
+- Still to test: evaluation (PPV, leakage, calibration), attention (why `/√d`, causal mask),
+  LayerNorm vs BatchNorm.
+- Habits: give a `[1]/[2]/[3]` tag on each answer; finish sentences.
 
 ## 6. How to shape your answers
 

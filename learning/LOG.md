@@ -17,6 +17,33 @@ anything that survives two monthly reviews becomes the next month's first topic.
 
 ---
 
+## 2026-09-30 — Diagnostic test (A–D) and plan rewrite
+**Did:** Closed-book diagnostic of 40 questions. Took sections A–D (Q1–22); Q18 and Q22 left
+blank, the Q14 check (`z = [0,0,0]`, true class 1) unanswered. Sections E–H not taken yet:
+scheduled for W4 (baseline), W12 and W21. Rewrote `learning/ROADMAP.md` as a 21-week plan
+(5 Oct 2026 → 28 Feb 2027) with XGBoost as a three-week module (W5–W7), and added
+`learning/WORKFLOW.md` (Claude Code vs chat split, weekly loop, prompts). Corrected the level
+description in `CLAUDE.md` and `chat-context.md`: beginner in classical ML.
+**Understood:** Nothing verified yet. Explanations received and to be confirmed in exit checks:
+ridge as a limit and the intercept (Q4), scaling per model (Q10), backprop cost argument
+(Q16), softmax + cross-entropy gradient `p − y` (Q14), saturation (Q19).
+**Still shaky:**
+- Normal equation written as `X Xᵀ` instead of `XᵀX`; singular cases (Q6).
+- Gradient-descent update written on the loss instead of the parameters (Q11).
+- Binary cross-entropy formula not written; "MSE is only for regression" is imprecise (Q7).
+- Decision-tree split criterion blank (Q8); KNN in high dimension (Q9).
+- Feature scaling: said "yes" without separating KNN / ridge / tree (Q10).
+- Softmax + CE gradient, backprop cost, initial loss of a uniform softmax, residual
+  connections: blank (Q14, Q16, Q18, Q22).
+- Vocabulary: saturation vs "dead neuron" (Q19); embedding table described as "coding logits"
+  (Q21); BatchNorm train/eval explanation unfinished (Q20).
+- Overfitting described only as "training too long" (Q1); why tuning on test breaks validity (Q2).
+- Habit: no confidence tags until Q17; sentences left unfinished.
+**Next:** Answer the open items (Q14 check, Q18, Q22) with confidence tags, then start W1:
+linear regression from scratch. Before writing it, write the normal equation with shapes.
+
+---
+
 ## 2026-09-29 — Repo, roadmap, and rules
 **Did:** Turned `~/ML` into the `ml-journey` repo: existing work sorted into
 `notebooks/01-handson-ml/` (Géron) and `notebooks/02-zero-to-hero/` (Karpathy), data moved
