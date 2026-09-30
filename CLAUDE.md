@@ -67,7 +67,6 @@ learning/
 notebooks/               exploration and course work
 ├── 01-handson-ml/       scikit-learn on tabular data (Géron)
 ├── 02-zero-to-hero/     micrograd → makemore → nanoGPT (Karpathy)
-├── 03-tabular/          trees, boosting, XGBoost benchmarks (from W7)
 └── scratch/             throwaway
 src/mlj/                 reusable code, installed editable (`import mlj`)
 projects/                self-contained projects, one folder each, own README
@@ -94,3 +93,6 @@ folder. Scripts in `src/` and `notebooks/02-zero-to-hero/` resolve `data/` from
 - Notebooks are for exploring; once code is reused twice, it moves to `src/mlj/`.
 - A concept is not learned until there is a note in `learning/concepts/` I could hand to
   someone else.
+- Every project under `projects/` ends resume-grade (definition of done in
+  `learning/ROADMAP.md`): README with a headline result and CI, reproducible with `uv run`,
+  tests, data/model card, one figure, 1-page write-up.

@@ -44,6 +44,16 @@ Minimum viable week (6 h): Monday prep, one build session, Friday exit check.
 **E — Chat, oral exit check**
 > Oral exam on week N of the roadmap. Closed book. One question at a time, no hints until I say "hint". Grade each answer 0–2 and compare my confidence tag with the result. At the end list my gaps in a block I can paste into LOG.md "Still shaky".
 
+**F — Claude Code, project wrap-up**
+> Project wrap-up for <project>. Check it against the definition of done in learning/ROADMAP.md: README (question, data, method, headline result with CI, limitations), reproducible with `uv run` from a clean clone, tests, data/model card, one figure, 1-page write-up. List what is missing. Then draft two resume bullets with a number each; I will rewrite them.
+
+## Project definition of done
+
+Every project in the roadmap ends resume-grade: README with a headline result and its
+confidence interval, reproducible from a clean clone, tests on the core code, a data or model
+card, one clear figure, a 1-page write-up, and a resume bullet with a number. Run prompt F
+before tagging the project.
+
 ## Connecting GitHub to the chat
 
 1. In claude.ai, open the Project "AI/ML preparation" and add this repo to its knowledge through the GitHub option (connect GitHub first if asked).

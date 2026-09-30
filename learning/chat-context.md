@@ -72,12 +72,12 @@ From `notebooks/01-handson-ml/` (earlier, scikit-learn on tabular data): `housin
 
 ## 4. Exactly where I am
 
-**Plan week 0 (30 Sep 2026): diagnostic done; W1 starts 5 Oct with linear regression from
-scratch.** Weekly blocks: `learning/ROADMAP.md`. Weekly loop and prompts:
+**Plan week 0 (30 Sep 2026): diagnostic done; W1 (5 Oct) is the one foundations
+sprint, then the plan is project-driven (P1–P7).** Weekly blocks: `learning/ROADMAP.md`. Weekly loop and prompts:
 `learning/WORKFLOW.md`.
 
-The nanoGPT notebook (`notebooks/02-zero-to-hero/nano-gpt/train.ipynb`) is **parked until
-W8**. It has char-level encode/decode, 90/10 split, `get_batch`, a `BigramLanguageModel`
+The nanoGPT notebook (`notebooks/02-zero-to-hero/nano-gpt/train.ipynb`) is **parked**
+(attention returns in W11, inside the sepsis sequence model). It has char-level encode/decode, 90/10 split, `get_batch`, a `BigramLanguageModel`
 with token and position embeddings into a linear head, `generate()` and an AdamW loop.
 No self-attention, multi-head, LayerNorm or residuals yet.
 

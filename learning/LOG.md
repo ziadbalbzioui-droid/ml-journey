@@ -20,8 +20,10 @@ anything that survives two monthly reviews becomes the next month's first topic.
 ## 2026-09-30 — Diagnostic test (A–D) and plan rewrite
 **Did:** Closed-book diagnostic of 40 questions. Took sections A–D (Q1–22); Q18 and Q22 left
 blank, the Q14 check (`z = [0,0,0]`, true class 1) unanswered. Sections E–H not taken yet:
-scheduled for W4 (baseline), W12 and W21. Rewrote `learning/ROADMAP.md` as a 21-week plan
-(5 Oct 2026 → 28 Feb 2027) with XGBoost as a three-week module (W5–W7), and added
+scheduled for W2 (baseline), W8 and W21. Rewrote `learning/ROADMAP.md` as a 21-week,
+project-driven plan (5 Oct 2026 → 28 Feb 2027): one foundations week, then seven projects
+(XGBoost from scratch, rigorous tabular, sepsis time series, survival, omics, audit toolkit,
+lab replication), and added
 `learning/WORKFLOW.md` (Claude Code vs chat split, weekly loop, prompts). Corrected the level
 description in `CLAUDE.md` and `chat-context.md`: beginner in classical ML.
 **Understood:** Nothing verified yet. Explanations received and to be confirmed in exit checks:
