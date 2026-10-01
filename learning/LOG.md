@@ -17,6 +17,27 @@ anything that survives two monthly reviews becomes the next month's first topic.
 
 ---
 
+## 2026-10-01 — Deep learning promoted to its own project
+**Did:** Pulled the 2026-09-30 diagnostic rewrite from GitHub (`WORKFLOW.md`, 21-week plan)
+into the local clone. Then rewrote `learning/ROADMAP.md`: added `P2 — Neural networks and
+attention from scratch` (W5–W6, Core) — self-attention derived and gradient-checked in NumPy,
+then finishing `nano-gpt/train.ipynb` into a trained char-GPT with ablations — funded by
+cutting `P5` (high-dimensional omics), already the lowest-priority item. Renumbered
+P2→P3 (clinical tabular), P3→P4 (sepsis), old P4→P5 (survival, still Stretch); P4's sequence
+model week (W13) now reuses P2's attention module instead of re-deriving it. Updated
+`chat-context.md` §4 to match (nanoGPT is active work, not parked).
+**Understood:** The original month-by-month plan treated the transformer as the single
+October deliverable; the diagnostic-driven rewrite had folded it down to one week inside the
+sepsis project. Neither matched "deep learning as an important part of the plan" — it needed
+its own project with its own exit check, not a subtask of something else.
+**Still shaky:** Nothing technical yet — this was a planning session, no code or theory. The
+two "light" weeks (now W14, W15) no longer land on Christmas/New Year; unverified whether that
+still matches my actual exam calendar.
+**Next:** W1 starts Monday 5 Oct — theory prep (normal equation, GD, logistic regression,
+ridge, AUROC) in chat, then `src/mlj/scratch/linear.py` and `logistic.py` here.
+
+---
+
 ## 2026-09-30 — Diagnostic test (A–D) and plan rewrite
 **Did:** Closed-book diagnostic of 40 questions. Took sections A–D (Q1–22); Q18 and Q22 left
 blank, the Q14 check (`z = [0,0,0]`, true class 1) unanswered. Sections E–H not taken yet:
