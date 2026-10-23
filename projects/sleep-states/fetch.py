@@ -7,10 +7,9 @@ Download the CMI "Detect Sleep States" competition files into data/cmi-sleep/ (~
 Also needs the competition rules accepted once:
 https://www.kaggle.com/competitions/child-mind-institute-detect-sleep-states/rules
 
-Writes data/cmi-sleep/.downloaded_at; cleanup.py deletes the folder RETENTION_DAYS after it.
+Writes the download date to data/cmi-sleep/.downloaded_at (delete the folder by hand within 60 days).
 """
 import datetime as dt
-import subprocess
 import sys
 from pathlib import Path
 
@@ -18,7 +17,6 @@ import kagglehub
 
 HANDLE = "child-mind-institute-detect-sleep-states"
 DEST = Path(__file__).resolve().parents[2] / "data" / "cmi-sleep"
-HERE = Path(__file__).resolve().parent
 
 
 def main() -> None:
@@ -30,9 +28,6 @@ def main() -> None:
         (DEST / ".downloaded_at").write_text(dt.datetime.now().astimezone().date().isoformat() + "\n")
     for f in sorted(DEST.iterdir()):
         print(f"  {f.name:30s} {f.stat().st_size / 1e6:8.1f} MB")
-    # make sure the deletion job is installed, and show the deadline
-    subprocess.run(["/usr/bin/python3", str(HERE / "cleanup.py"), "--install"], check=True)
-    subprocess.run(["/usr/bin/python3", str(HERE / "cleanup.py"), "--status"], check=True)
 
 
 if __name__ == "__main__":
