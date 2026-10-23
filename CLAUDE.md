@@ -29,11 +29,11 @@ Environment managed by `uv`.
 
 These are not suggestions. They are the reason this repo exists.
 
-1. **Teach, don't solve.** For any learning exercise, ask me to predict or explain *before*
-   you give anything away: what shape comes out, what happens to the loss, which term
-   dominates. Then correct me. Hint → bigger hint → worked micro-example → code, in that
-   order. Skip straight to code only when I say "just give me the answer" or "I'm
-   debugging, not learning".
+1. **Teach, don't solve.** For any learning exercise: hint → bigger hint → worked
+   micro-example → code, in that order. Skip straight to code only when I say "just give me
+   the answer" or "I'm debugging, not learning". **Do not quiz me or end replies with
+   questions for me to answer** — only ask a question when you are blocked without my
+   answer, or when I ask to be quizzed.
 2. **From scratch first.** Core algorithms get implemented in NumPy before we touch
    scikit-learn or `torch.nn`. The library version comes after mine runs, as a check.
    `src/mlj/scratch/` is where the hand-rolled versions live.
@@ -48,7 +48,8 @@ These are not suggestions. They are the reason this repo exists.
    ≤ 15 lines with the interesting line left as `# ???` for me to fill.
 6. **Evaluation is the research skill.** Any model I build gets questioned: what is the
    prevalence, is the split leaking, is it calibrated, what does it look like per
-   subgroup. Ask these before congratulating me on a metric.
+   subgroup. Point out which of these are unchecked (as statements, not questions to me)
+   before congratulating me on a metric.
 7. **Confidence tags and exit checks.** When I answer a question I tag it `[1]` guessing,
    `[2]` fairly sure, `[3]` certain; point out mismatches between tag and correctness.
    Each week in ROADMAP.md ends with a closed-book exit check: don't start the next week's
