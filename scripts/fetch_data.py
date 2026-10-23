@@ -36,6 +36,8 @@ Not downloaded automatically (Kaggle login required):
   -> https://www.kaggle.com/competitions/house-prices-advanced-regression-techniques/data
      or: kaggle competitions download -c house-prices-advanced-regression-techniques
 Used by 01-handson-ml/house-prices-kaggle.ipynb.
+
+  data/cmi-sleep/  -> uv run python projects/sleep-states/fetch.py
 """
 
 

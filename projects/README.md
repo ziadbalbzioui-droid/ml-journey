@@ -7,6 +7,7 @@ when the result is "it did not work, here is why").
 ```
 clinical-tabular/   Dec 2026 — mortality/readmission on MIMIC-IV demo
 early-warning/      Jan 2027 — deterioration prediction from vitals
+sleep-states/       Oct 2026 — sleep onset/wake detection from wrist accelerometry (Kaggle CMI)
 ```
 
 Every project README answers, in this order:
