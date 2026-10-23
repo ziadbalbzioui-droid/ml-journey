@@ -19,6 +19,10 @@ researchers who currently rely on diaries or polysomnography to annotate actigra
 | `train_events.csv` | ~14.5k | `series_id, night, event, step, timestamp`; `step` NaN if not labelled |
 | `test_series.parquet` | tiny | format example only — the real test set is hidden |
 
+**Retention: 60 days.** [cleanup.py](cleanup.py) runs as a launchd job (daily at 10:00 and at
+login): it notifies during the last 7 days, then deletes `data/cmi-sleep/` 60 days after the
+date in `.downloaded_at`. Check with `/usr/bin/python3 projects/sleep-states/cleanup.py --status`.
+
 Loaders in [sleepdet/data.py](sleepdet/data.py). Data card: *to write after EDA*.
 
 ## 3. Metric
