@@ -17,6 +17,40 @@ anything that survives two monthly reviews becomes the next month's first topic.
 
 ---
 
+## 2026-10-26 — Gradient boosting from scratch, XGBoost theory, NHANES practice
+**Did:** Theory (chat): regression trees (greedy threshold search, SSE criterion, `max_depth`,
+`min_samples_leaf`, samples vs features, cost O(d·p·n log n), histogram trick); gradient
+boosting (F₀ = mean, r = y − F, η); AdaBoost as the exponential-loss special case; XGBoost =
+GB + λ (L2 on leaf values) + γ (min gain per split) + g/h for any loss. Code: gradient
+boosting for squared loss with sklearn trees as weak learners
+(`notebooks/scratch/gbm_scratch.py`), matches `GradientBoostingRegressor` exactly (max diff
+0.0). Practice: NHANES I 10-year mortality notebook — baselines, default XGBoost, early
+stopping, 5-fold CV over `max_depth` × `min_child_weight`, test, gain importance.
+Results: default XGB train AUC 0.999 / val 0.81; logreg (all features) val 0.84; age only
+0.80; early-stopped XGB val 0.84; best CV depth 1–2, 0.846 ± 0.015; test XGB 0.813 vs
+logreg 0.808.
+**Understood:** Each boosting tree is fitted on what the current *sum* still gets wrong, and
+η keeps each correction small. `min_samples_leaf` trades variance (leaf mean of k samples has
+variance σ²/k) for bias (can't isolate a real subgroup smaller than k). λ in XGBoost is ridge
+on leaf values: w* = Σr/(n+λ), i.e. ridge with one constant feature — I made that link myself.
+**Still shaky:**
+- Treated a tree (a function) as an array of values three times in the from-scratch loop
+  (`self.trees[_]` in the residual, `F = tree + …`, `sum(self.trees)`).
+- Wrote the optimality condition but not the closed-form result (F₀ = mean, r = y − F);
+  skipped the derivations.
+- Complexity: conflated n (samples) with p (features).
+- Read "train AUC 0.999 / val 0.81" as "little noise" instead of "memorised the noise".
+- Read "depth 1 wins" as "only age matters" instead of "additive model, few interactions"
+  (age only = 0.80 < all features = 0.84 contradicts it).
+- Not done: pen-and-paper derivation of w* = −G/(H+λ) and the gain; g, h for log-loss;
+  the experiment-grid predictions (lr × n_trees) in `gbm_scratch.py`.
+- Most check questions skipped this session; no confidence tags given.
+**Next:** derive w* and the XGBoost gain on paper, then g = p − y, h = p(1−p) for log-loss
+(30 min). Then SHAP on the NHANES model, then CMI Sleep States on Kaggle with subject-wise
+splits.
+
+---
+
 ## 2026-10-01 — Deep learning promoted to its own project
 **Did:** Pulled the 2026-09-30 diagnostic rewrite from GitHub (`WORKFLOW.md`, 21-week plan)
 into the local clone. Then rewrote `learning/ROADMAP.md`: added `P2 — Neural networks and
