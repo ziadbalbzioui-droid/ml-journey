@@ -1,6 +1,7 @@
 # ---- Datasets: not committed, re-downloadable with `python3 scripts/fetch_data.py`
 data/*
 !data/README.md
+notebooks/03-ens-intro-ml/data/
 
 # ---- Jupyter
 .ipynb_checkpoints/

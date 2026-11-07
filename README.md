@@ -17,6 +17,7 @@ learning/
 notebooks/
 ├── 01-handson-ml/        scikit-learn on tabular data (Géron)
 ├── 02-zero-to-hero/      micrograd → makemore → nanoGPT (Karpathy)
+├── 03-ens-intro-ml/      ENS intro-ML labs: classification → trees → clustering → MLP → CNN → RNN → ViT
 └── scratch/              throwaway
 src/mlj/                  reusable code — `scratch/` (NumPy from scratch), `eval/` (harness)
 projects/                 self-contained projects, one folder each
