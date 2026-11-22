@@ -9,7 +9,9 @@ the ML coding + ML fundamentals rounds of internship interviews (applications Ja
 
 - Every function comes with its signature, a docstring and hints only. **The body is mine.**
 - `✍️ Predict` cells come before experiments: write the guess and a confidence tag `[1]`/`[2]`/`[3]` *before* running.
-- `check` cells print ✅ or a ❌ that says *what* is wrong, not how to fix it. No answer keys in the repo.
+- `check` cells print ✅ or a ❌ that says *what* is wrong, not how to fix it.
+- Corrections are in [`solutions/`](solutions/) (run, with outputs). Open one only after your checks pass, or after
+  20 min stuck on a single function — then close it and rewrite that function from memory.
 - No Claude / Copilot / autocomplete writing code. Claude Code only for the hint ladder, after 15 min stuck.
 - Each notebook ends with a debrief to copy into `learning/LOG.md`, and most with a blank-file drill (rewrite the
   core function from memory, timed): this is the interview-readiness test.
