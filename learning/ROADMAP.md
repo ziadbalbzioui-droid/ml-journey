@@ -1,5 +1,21 @@
 # Roadmap — 5 Oct 2026 → 28 Feb 2027 (21 weeks)
 
+> **Revised 2026-11-22 — read this first.** Seven weeks in, the W1–W6 builds were not done (theory was studied via
+> the ENS course instead), and a second goal was added: internship applications in Jan–Feb 2027 for a Sept 2027
+> start (Google Student Researcher, Apple, Palantir, Meta). The week-by-week plan below is **paused**; until mid-Jan
+> the weekly budget (~8–9 h) is split into three tracks:
+>
+> | Track | h/week | What |
+> | --- | --- | --- |
+> | ML, hands-on | ~3 | `notebooks/04-practice/` — write every line, auto-checked; 11 (attention) first, then 00 → 01 → 02 → 07 → 06 → … |
+> | Algorithms | ~3–4 | NeetCode 150 list, solved on LeetCode, one a day, timed, Python, no IDE help; target 60–75 by end of Jan |
+> | Mentor | ~2 | Tomin's forecasting book |
+>
+> Mid-Jan → Feb: the CMI Sleep States project (`projects/sleep-states/`) replaces the notebooks and absorbs P3/P4
+> (rigorous evaluation, time-aware validation, GBDT vs sequence models on wearable data); add 2–3 mock interviews.
+> Cut: P1 as a deliverable (its algorithms live in the notebooks), P3 diabetes, P4 sepsis, P5, P6. P7 shrinks to
+> reading 3–4 lab papers in February. Exit checks become each notebook's blank-file drill.
+
 Revised 2026-09-30 (evening), after the diagnostic test (`LOG.md`) and a change of strategy:
 **one foundations week, then project-driven.** Every project must be good enough to show on a
 resume and to a research group at Stanford.
