@@ -17,6 +17,27 @@ anything that survives two monthly reviews becomes the next month's first topic.
 
 ---
 
+## 2026-11-22 — Plan reset and 04-practice notebooks
+**Did:** Reviewed the repo against the roadmap: nothing built since 26 Oct (`src/mlj/scratch/` empty, most
+`YOUR CODE HERE` blocks in `03-ens-intro-ml/` blank); theory studied through the ENS course instead. Added a second
+goal: internship applications Jan–Feb 2027 for a Sept 2027 start. Researched what those interviews test (algorithms
+rounds for Google/Meta SWE; ML coding from scratch — kNN, k-means, linear/logistic regression, MLP + training loop,
+attention with masking — and ML fundamentals for ML roles; debugging and decomposition rounds at Palantir). Paused
+the week-by-week roadmap and replaced it with three tracks (see the note at the top of `ROADMAP.md`). Created
+`notebooks/04-practice/`: a 14-notebook curriculum by difficulty, of which 6 are built and verified against hidden
+reference solutions (00 Python, 01 linear/logistic, 02 optimizers, 06 trees/boosting, 07 evaluation, 11 attention).
+**Understood:** The bottleneck is writing code without help, not theory. The Stanford prep covers maybe 40 % of
+interview prep (ML coding, ML fundamentals, a project to talk about) and none of the algorithms rounds.
+**Still shaky:**
+- Unknown how much Python I can write alone — notebook 00 measures it.
+- Everything on the 2026-10-26 list is still open (w* and gain on paper, g/h for log-loss): notebook 06 covers it.
+- Google's 2027 EMEA SWE intern posting closed 23 Oct 2026; which programmes are still open for a Sept 2027 start
+  is unverified — check each careers page in December.
+**Next:** notebook 11, Part 1 (NumPy attention) — write the shape of `Q @ Kᵀ` on paper first. Plus NeetCode
+"Arrays & Hashing", one problem today.
+
+---
+
 ## 2026-10-26 — Gradient boosting from scratch, XGBoost theory, NHANES practice
 **Did:** Theory (chat): regression trees (greedy threshold search, SSE criterion, `max_depth`,
 `min_samples_leaf`, samples vs features, cost O(d·p·n log n), histogram trick); gradient
