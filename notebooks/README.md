@@ -8,6 +8,7 @@ but they must run top to bottom before being committed.
 02-zero-to-hero/  neural nets from scratch (Karpathy) — micrograd → makemore → nanoGPT
 03-ens-intro-ml/  ENS intro-ML labs — classification, trees, clustering, MLP, CNN, RNN, ViT
 04-practice/      write-every-line exercises with auto-checks, Python → transformers (see its README)
+05-explore/       exploration-first notebooks on real data: logistic regression, losses, optimizers, MLP, GPT
 scratch/          throwaway experiments, no expectations
 ```
 

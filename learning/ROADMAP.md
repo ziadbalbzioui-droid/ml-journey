@@ -7,7 +7,7 @@
 >
 > | Track | h/week | What |
 > | --- | --- | --- |
-> | ML, hands-on | ~3 | `notebooks/04-practice/` — write every line, auto-checked; 11 (attention) first, then 00 → 01 → 02 → 07 → 06 → … |
+> | ML, hands-on | ~3 | `notebooks/05-explore/` 01 → 05 first (real data, exploration-first; added 2026-11-24), then `04-practice/` 07 → 06 → 11 for the topics 05-explore does not cover |
 > | Algorithms | ~3–4 | NeetCode 150 list, solved on LeetCode, one a day, timed, Python, no IDE help; target 60–75 by end of Jan |
 > | Mentor | ~2 | Tomin's forecasting book |
 >
