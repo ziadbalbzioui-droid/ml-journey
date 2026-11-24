@@ -1,0 +1,416 @@
+%% md
+# 02 — Loss functions: what are you actually asking the model to do?
+
+Choosing a loss is the most underrated decision in ML. It is not a technical detail: **the loss decides which
+quantity your model ends up predicting.** Mean or median? A probability or a score? Robust to bad labels or not?
+
+**Datasets**
+- *Diabetes progression* (Efron et al., 2004, built into scikit-learn): 442 patients, 10 baseline measurements, target
+  = a measure of disease progression one year later. Regression.
+- *Pima diabetes* again, preprocessed exactly as you did in notebook 01 (`mlj.datasets.prepare_pima`). Classification.
+
+**What you will learn**
+- Why MSE predicts the mean, MAE the median, and the pinball loss any quantile — by experiment first, proof after.
+- How a few corrupted labels wreck an MSE fit, and what Huber does about it.
+- Quantile regression: prediction *intervals*, and how to check they are honest (coverage).
+- Why classification uses cross-entropy and not MSE: vanishing gradients when the model is confidently wrong.
+- What class weights really do (spoiler: they move the threshold and break calibration, they do not make the model
+  better at ranking).
+- Why you train on one thing (a loss) and report another (a metric).
+
+**New tool:** PyTorch autograd. You wrote gradients by hand in notebook 01; from here on, `loss.backward()` does it,
+so you can try a new loss in one line. **Time:** ~2 h.
+
+Legend as in notebook 01: 📖 read · 🔮 predict (+ confidence `[1]`/`[2]`/`[3]`) · ✍️ your code · 🧪 explore · 🛠️ habit.
+
+%% code
+import numpy as np
+import matplotlib.pyplot as plt
+import torch
+from sklearn.datasets import load_diabetes
+from mlj.datasets import prepare_pima
+
+rng = np.random.default_rng(0)
+torch.manual_seed(0)
+plt.rcParams["figure.figsize"] = (6, 3.5)
+
+def check(cond, msg):
+    print(("✅ " if cond else "❌ ") + msg)
+
+%% md
+## Part 1 — The best constant prediction (25 min)
+
+The simplest possible model predicts the **same number `c` for everyone**. Which `c` is best depends entirely on the
+loss. This toy question contains the whole idea of the notebook.
+
+%% code
+diab = load_diabetes(scaled=False)
+y = diab.target                       # disease progression, one number per patient
+print(len(y), "patients | min", y.min(), "| max", y.max())
+plt.hist(y, bins=30); plt.xlabel("progression after 1 year"); plt.show()
+
+%% md
+✍️ Write three losses of a constant prediction `c` against all targets `y`:
+- MSE: mean of `(y − c)²`
+- MAE: mean of `|y − c|`
+- pinball (quantile) loss at level `τ`: mean of `max(τ·(y − c), (τ − 1)·(y − c))`. Under-predicting costs `τ` per unit,
+  over-predicting costs `1 − τ`.
+
+%% code
+def mse_c(y, c):
+    #<<SOL
+    return np.mean((y - c) ** 2)
+    #==
+    return ???
+    #>>
+
+def mae_c(y, c):
+    #<<SOL
+    return np.mean(np.abs(y - c))
+    #==
+    return ???
+    #>>
+
+def pinball_c(y, c, tau):
+    #<<SOL
+    r = y - c
+    return np.mean(np.maximum(tau * r, (tau - 1) * r))
+    #==
+    r = y - c
+    return ???
+    #>>
+
+%% md
+🔮 Scan `c` from 0 to 350 and find the minimiser of each loss. Before running: which familiar statistic of `y` will
+each minimiser be? (Pinball with `τ = 0.9` is the interesting one.)
+
+> Prediction:
+
+%% code
+cs = np.linspace(0, 350, 3501)
+best = {}
+fig, axes = plt.subplots(1, 3, figsize=(13, 3))
+for ax, (name, f) in zip(axes, [("MSE", mse_c), ("MAE", mae_c), ("pinball τ=0.9", lambda y, c: pinball_c(y, c, 0.9))]):
+    L = [f(y, c) for c in cs]
+    best[name] = cs[int(np.argmin(L))]
+    ax.plot(cs, L); ax.axvline(best[name], ls="--", c="k"); ax.set_title(f"{name}: argmin = {best[name]:.1f}")
+plt.tight_layout(); plt.show()
+print(f"mean {y.mean():.1f} | median {np.median(y):.1f} | 90th percentile {np.quantile(y, 0.9):.1f}")
+
+%% md
+📖 **Why.** Set the derivative to zero. MSE: `−2·mean(y − c) = 0` → `c = mean`. MAE: the derivative is
+`(#below − #above)/n`, zero when half the points are on each side → median. Pinball: zero when a fraction `τ` is
+below → the `τ`-quantile. A model with features does the same thing *conditionally*: MSE learns `E[y | x]`, MAE learns
+`median(y | x)`.
+
+🧪 **Explore — outliers.** A data-entry error: 5 patients get `y = 5000` instead of their real value. Recompute the
+three minimisers on the corrupted vector. Which one moves, and by how much?
+
+%% code
+#<<SOL
+y_bad = y.copy(); y_bad[:5] = 5000
+for name, f in [("MSE", mse_c), ("MAE", mae_c), ("pinball 0.9", lambda y, c: pinball_c(y, c, 0.9))]:
+    cs2 = np.linspace(0, 1000, 10001)
+    print(f"{name:12s} clean {cs2[np.argmin([f(y, c) for c in cs2])]:6.1f} -> corrupted {cs2[np.argmin([f(y_bad, c) for c in cs2])]:6.1f}")
+#==
+# your experiment here
+#>>
+
+%% md
+> What I see:
+
+%% md
+## Part 2 — Regression with a feature: MSE vs MAE vs Huber (25 min)
+
+Now a real model: `ŷ = w·bmi + b`, on standardised BMI so we can plot it. We corrupt 8 % of the **training** labels
+(as if a column had been mis-entered for some patients) and keep the test set clean.
+
+%% code
+from sklearn.model_selection import train_test_split
+
+x_all = diab.data[:, [2]]                       # BMI
+x_all = (x_all - x_all.mean()) / x_all.std()
+x_tr, x_te, yr_tr, yr_te = train_test_split(x_all, y, test_size=0.3, random_state=0)
+yr_tr_bad = yr_tr.copy()
+bad = rng.choice(len(yr_tr), size=int(0.08 * len(yr_tr)), replace=False)
+yr_tr_bad[bad] = rng.uniform(600, 900, size=len(bad))   # corrupted labels, way too high
+
+Xt_tr, Xt_te = torch.tensor(x_tr, dtype=torch.float32), torch.tensor(x_te, dtype=torch.float32)
+yt_tr_bad, yt_te = torch.tensor(yr_tr_bad, dtype=torch.float32), torch.tensor(yr_te, dtype=torch.float32)
+
+%% md
+📖 **Autograd in 4 lines.** Tensors created with `requires_grad=True` record every operation; `loss.backward()` fills
+`.grad` with `∂loss/∂tensor`. The generic training loop below works for **any** loss you can write with torch ops.
+
+%% code
+def fit_linear(loss_fn, X, y, lr=2.0, n_steps=2000):
+    w = torch.zeros(X.shape[1], requires_grad=True)
+    b = torch.tensor(y.median().item(), requires_grad=True)     # start near the data
+    opt = torch.optim.Adam([w, b], lr=lr)                       # Adam: opened up in notebook 03
+    sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, n_steps)   # lr decays to 0: lands precisely
+    for _ in range(n_steps):
+        opt.zero_grad()
+        loss = loss_fn(X @ w + b, y)
+        loss.backward()
+        opt.step(); sched.step()
+    return w.detach(), b.detach()
+
+%% md
+✍️ Write the losses as torch functions of `(pred, y)`, each one line. **Huber** with threshold `δ`: quadratic
+`½r²` for `|r| ≤ δ`, linear `δ(|r| − ½δ)` beyond. Quadratic near zero (smooth, like MSE), linear far away (robust,
+like MAE). Use `torch.where`.
+
+%% code
+def mse(pred, y):
+    #<<SOL
+    return ((pred - y) ** 2).mean()
+    #==
+    return ???
+    #>>
+
+def mae(pred, y):
+    #<<SOL
+    return (pred - y).abs().mean()
+    #==
+    return ???
+    #>>
+
+def huber(pred, y, delta=30.0):
+    r = (pred - y).abs()
+    #<<SOL
+    return torch.where(r <= delta, 0.5 * r ** 2, delta * (r - 0.5 * delta)).mean()
+    #==
+    return ???
+    #>>
+
+p, t = torch.tensor([0.0, 0.0]), torch.tensor([10.0, 100.0])
+check(torch.isclose(huber(p, t), torch.tensor((50 + 30 * 85) / 2)), "huber: quadratic below delta, linear above")
+check(torch.isclose(huber(p, t), torch.nn.functional.huber_loss(p, t, delta=30.0)), "matches torch's huber_loss")
+
+%% md
+🔮 On the corrupted training set, rank the three fits by **test** MAE (test labels are clean).
+
+> Prediction:
+
+%% code
+grid = torch.linspace(-2.5, 3.5, 100)[:, None]
+plt.scatter(x_tr, yr_tr_bad, s=8, alpha=0.4, label="train (8 % corrupted)")
+for name, f in [("MSE", mse), ("MAE", mae), ("Huber", huber)]:
+    w, b = fit_linear(f, Xt_tr, yt_tr_bad)
+    test_mae = (Xt_te @ w + b - yt_te).abs().mean().item()
+    plt.plot(grid, grid @ w + b, lw=2, label=f"{name}: test MAE {test_mae:.1f}")
+plt.xlabel("BMI (standardised)"); plt.ylabel("progression"); plt.legend(fontsize=8); plt.show()
+
+%% md
+🧪 **Explore.** Change the corruption: make the bad labels *low* (`uniform(0, 30)`) instead of high, or corrupt 30 %
+instead of 8 %. Change Huber's `δ` (5, 30, 300). When does Huber stop helping? When does even MAE break? (Think: the
+median is robust only while less than half of the data is bad.)
+
+> What I see:
+
+%% md
+## Part 3 — Quantile regression: prediction intervals (20 min)
+
+A single number "progression = 152" hides how uncertain it is. Medicine often needs a range: *"between 80 and 250,
+with 80 % probability"*. Train one model for `τ = 0.1` and one for `τ = 0.9` with the pinball loss — the interval
+between them should contain ~80 % of new patients. Use all 10 features this time (clean labels).
+
+✍️ The pinball loss in torch.
+
+%% code
+def pinball(pred, y, tau):
+    r = y - pred
+    #<<SOL
+    return torch.maximum(tau * r, (tau - 1) * r).mean()
+    #==
+    return ???
+    #>>
+
+X10 = diab.data; X10 = (X10 - X10.mean(0)) / X10.std(0)
+X10_tr, X10_te, y10_tr, y10_te = [torch.tensor(a, dtype=torch.float32)
+                                  for a in train_test_split(X10, y, test_size=0.3, random_state=0)]
+q = {tau: fit_linear(lambda p, t: pinball(p, t, tau), X10_tr, y10_tr) for tau in [0.1, 0.5, 0.9]}
+pred = {tau: (X10_te @ w + b) for tau, (w, b) in q.items()}
+
+%% md
+🛠️ **Habit: an uncertainty estimate is a claim — test it.** The claim here is "80 % of test patients fall inside
+`[q0.1, q0.9]`". ✍️ Compute the empirical **coverage** on test.
+
+%% code
+#<<SOL
+coverage = ((y10_te >= pred[0.1]) & (y10_te <= pred[0.9])).float().mean().item()
+#==
+coverage = ???
+#>>
+print(f"coverage of the 80 % interval on test: {coverage:.2f} | mean width {(pred[0.9] - pred[0.1]).mean():.0f}")
+
+order = torch.argsort(pred[0.5])
+plt.fill_between(range(len(order)), pred[0.1][order], pred[0.9][order], alpha=0.3, label="80 % interval")
+plt.plot(pred[0.5][order], c="k", lw=1, label="median prediction")
+plt.scatter(range(len(order)), y10_te[order], s=6, c="tab:red", label="truth")
+plt.xlabel("test patients, sorted by prediction"); plt.legend(fontsize=8); plt.show()
+
+%% md
+🧪 **Explore.** Is the coverage close to 0.80? Split the test patients into low and high predicted progression and
+compute coverage in each half: is the interval equally honest for both? (Linear quantile models often are not — that
+is what *conformal prediction* fixes, a good thing to read about later.)
+
+> What I see:
+
+%% md
+## Part 4 — Classification: why cross-entropy and not MSE? (25 min)
+
+For a positive example (`y = 1`) with logit `z` and `p = σ(z)`:
+- BCE: `−log p`
+- MSE on the probability: `(1 − p)²`
+
+✍️ Plot both losses **and their gradients with respect to `z`** for `z ∈ [−8, 8]`. Use autograd for the gradients
+(compute the loss on a tensor `z` with `requires_grad=True`, sum, backward, read `z.grad`).
+
+%% code
+z = torch.linspace(-8, 8, 400, requires_grad=True)
+#<<SOL
+bce_vals = -torch.log(torch.sigmoid(z))
+mse_vals = (1 - torch.sigmoid(z)) ** 2
+g_bce = torch.autograd.grad(bce_vals.sum(), z)[0]
+g_mse = torch.autograd.grad(mse_vals.sum(), z)[0]
+#==
+bce_vals = ???
+mse_vals = ???
+g_bce = ???          # d(bce)/dz, one value per z
+g_mse = ???
+#>>
+fig, axes = plt.subplots(1, 2, figsize=(11, 3.2))
+axes[0].plot(z.detach(), bce_vals.detach(), label="BCE"); axes[0].plot(z.detach(), mse_vals.detach(), label="MSE on p")
+axes[0].set_title("loss for y = 1"); axes[0].set_xlabel("logit z"); axes[0].legend()
+axes[1].plot(z.detach(), g_bce, label="BCE"); axes[1].plot(z.detach(), g_mse, label="MSE on p")
+axes[1].set_title("gradient w.r.t. z"); axes[1].set_xlabel("logit z"); axes[1].legend(); plt.show()
+
+%% md
+🔮 Look at `z = −8`: the model is *confidently wrong*. Which loss pushes hard to fix it, and which one barely moves?
+Now predict: if we start logistic regression on Pima from **badly wrong** weights, which loss recovers faster?
+
+> Prediction:
+
+📖 BCE's gradient is `p − y`: proportional to how wrong you are. MSE's is `2(p − 1)·p(1 − p)`: the `p(1 − p)` factor
+from the sigmoid kills it exactly when `p ≈ 0`, i.e. when the model is most wrong. That is the **saturation** problem,
+and it comes back in deep nets (why sigmoid activations fell out of fashion, notebook 04).
+
+%% code
+d = prepare_pima()
+A_tr = torch.tensor(np.column_stack([np.ones(len(d["X_tr"])), d["X_tr"]]), dtype=torch.float32)
+A_va = torch.tensor(np.column_stack([np.ones(len(d["X_va"])), d["X_va"]]), dtype=torch.float32)
+yc_tr, yc_va = torch.tensor(d["y_tr"], dtype=torch.float32), torch.tensor(d["y_va"], dtype=torch.float32)
+
+def train_logreg(loss_name, w0, lr=0.5, n_steps=300):
+    w = w0.clone().requires_grad_(True)
+    accs = []
+    for _ in range(n_steps):
+        p = torch.sigmoid(A_tr @ w)
+        loss = -(yc_tr * torch.log(p + 1e-9) + (1 - yc_tr) * torch.log(1 - p + 1e-9)).mean() if loss_name == "BCE" \
+            else ((p - yc_tr) ** 2).mean()
+        g, = torch.autograd.grad(loss, w)
+        with torch.no_grad():
+            w -= lr * g
+            accs.append(((torch.sigmoid(A_va @ w) > 0.5).float() == yc_va).float().mean().item())
+    return accs
+
+w_bad = -3 * torch.tensor([0, 0.5, 1.0, 0, 0.2, 0, 0.6, 0.2, 0.1])    # the right weights, flipped and inflated
+for name in ["BCE", "MSE"]:
+    plt.plot(train_logreg(name, w_bad), label=name)
+plt.xlabel("step"); plt.ylabel("val accuracy"); plt.legend(); plt.show()
+
+%% md
+🧪 **Explore.** Start both from `w = 0` instead. Is the difference still there? (When the model is not confidently
+wrong, MSE works acceptably — the problem is specific to saturation.)
+
+> What I see:
+
+%% md
+## Part 5 — Class weights: what they really do (15 min)
+
+A common reflex on imbalanced data: "weight the positives more in the loss". Weighted BCE:
+`−mean( k·y·log p + (1 − y)·log(1 − p) )`, with `k = (#neg / #pos)` to "balance" the classes.
+
+🔮 Compared with plain BCE, will the weighted model have (a) a higher AUROC, (b) more predicted positives at threshold
+0.5, (c) better-calibrated probabilities?
+
+> Prediction:
+
+%% code
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import roc_auc_score
+from sklearn.calibration import calibration_curve
+
+plain = LogisticRegression(C=np.inf, max_iter=5000).fit(d["X_tr"], d["y_tr"])
+weighted = LogisticRegression(C=np.inf, max_iter=5000, class_weight="balanced").fit(d["X_tr"], d["y_tr"])
+for name, m in [("plain", plain), ("weighted", weighted)]:
+    p = m.predict_proba(d["X_va"])[:, 1]
+    print(f"{name:9s} AUROC {roc_auc_score(d['y_va'], p):.3f} | flagged at 0.5: {np.mean(p > 0.5):.2f} "
+          f"| mean p {p.mean():.2f} (true prevalence {d['y_va'].mean():.2f})")
+    frac, mean_p = calibration_curve(d["y_va"], p, n_bins=5)
+    plt.plot(mean_p, frac, "o-", label=name)
+plt.plot([0, 1], [0, 1], "k:"); plt.xlabel("predicted probability"); plt.ylabel("observed frequency"); plt.legend(); plt.show()
+
+%% md
+📖 **What happened.** The ranking of patients barely changes (AUROC almost equal), so the weighted model is not
+"better". For logistic regression, weighting the positives by `k` mostly adds `log k` to the intercept: every logit
+shifts up. That is the same as lowering the threshold — which you could have done after training, on the plain model,
+*while keeping honest probabilities*.
+
+🛠️ **Habit: train for good probabilities, choose the threshold for the decision.** Two separate steps. Re-weight only
+when you have a reason (e.g. the model is too small to fit the rare class at all).
+
+✍️ Check the claim: compare `weighted.intercept_ − plain.intercept_` with `log(k)`, and the other coefficients.
+
+%% code
+#<<SOL
+k = (d["y_tr"] == 0).sum() / (d["y_tr"] == 1).sum()
+print(f"intercept shift {weighted.intercept_[0] - plain.intercept_[0]:.3f} vs log k = {np.log(k):.3f}")
+print("max |coef difference|:", np.abs(weighted.coef_ - plain.coef_).max().round(3))
+#==
+# your check here
+#>>
+
+%% md
+## Part 6 — Loss vs metric (10 min)
+
+We report accuracy or AUROC, but we train on BCE. Why not train on accuracy directly?
+
+🧪 Take the plain logistic model, vary **one** weight (the glucose coefficient, index 1 in `coef_[0]`) over a range,
+and plot train accuracy and train BCE as functions of it. Look at the shapes and say why gradient descent can use one
+and not the other.
+
+%% code
+#<<SOL
+w0, b0 = plain.coef_[0].copy(), plain.intercept_[0]
+vals = np.linspace(-1, 3, 400)
+accs, bces = [], []
+for v in vals:
+    w = w0.copy(); w[1] = v
+    pz = 1 / (1 + np.exp(-(d["X_tr"] @ w + b0)))
+    accs.append(np.mean((pz > 0.5) == d["y_tr"]))
+    bces.append(-np.mean(d["y_tr"] * np.log(pz) + (1 - d["y_tr"]) * np.log(1 - pz)))
+fig, ax = plt.subplots(1, 2, figsize=(11, 3))
+ax[0].plot(vals, accs); ax[0].set_title("train accuracy"); ax[1].plot(vals, bces); ax[1].set_title("train BCE")
+for a in ax: a.set_xlabel("glucose weight")
+plt.show()
+#==
+# your experiment here
+#>>
+
+%% md
+> What I see:
+
+📖 Accuracy is piecewise constant: its gradient is zero almost everywhere, and undefined at the jumps. BCE is a
+smooth, convex **surrogate**: it goes down when the model gets more right, so it can be optimised. You train on the
+surrogate and evaluate on what you care about.
+
+%% md
+## Debrief → `learning/LOG.md`
+
+1. Which quantity does a model trained with MSE / MAE / pinball(τ) predict? One-line justification each.
+2. Huber in one sentence: what it does near zero and far away, and why.
+3. BCE vs MSE gradients w.r.t. the logit, and the word for what goes wrong with MSE.
+4. What class weights do to a logistic regression, and the better alternative.
+5. **Still shaky:** ✍️ cells that took more than two tries, 🔮 tagged `[2]`/`[3]` that were wrong.

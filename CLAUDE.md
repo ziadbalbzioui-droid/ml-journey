@@ -69,6 +69,8 @@ notebooks/               exploration and course work
 ├── 01-handson-ml/       scikit-learn on tabular data (Géron)
 ├── 02-zero-to-hero/     micrograd → makemore → nanoGPT (Karpathy)
 ├── 03-ens-intro-ml/     ENS intro-ML labs (classification → ViT)
+├── 04-practice/         write-every-line exercises, auto-checked
+├── 05-explore/          exploration-first notebooks on real data (01–05)
 └── scratch/             throwaway
 src/mlj/                 reusable code, installed editable (`import mlj`)
 projects/                self-contained projects, one folder each, own README

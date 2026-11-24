@@ -17,6 +17,8 @@ data/
 ├── tinyshakespeare.txt        1.1 MB of Shakespeare  → nano-gpt
 ├── housing/housing.csv        California housing     → 01-handson-ml/housing.ipynb
 ├── titanic/{train,test}.csv   Titanic                → 01-handson-ml/classification.ipynb
+├── pima/diabetes.csv       Pima diabetes          → 05-explore (auto-downloaded by mlj.datasets)
+├── fashion-mnist/*.gz      Fashion-MNIST          → 05-explore (auto-downloaded by mlj.datasets)
 └── house-prices/              Kaggle, manual download → 01-handson-ml/house-prices-kaggle.ipynb
     ├── train.csv  test.csv  sample_submission.csv  data_description.txt
 ```

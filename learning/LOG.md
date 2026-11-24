@@ -17,6 +17,22 @@ anything that survives two monthly reviews becomes the next month's first topic.
 
 ---
 
+## 2026-11-24 — 05-explore: exploration-first notebooks on real data
+**Did:** Feedback on `04-practice/`: too condensed, mostly filling in equations, not enough room to explore or to learn
+how ML is practised. Built `notebooks/05-explore/` (5 notebooks, each with a run solution in `solutions/`):
+01 logistic regression on Pima diabetes, 02 loss functions, 03 optimizers playground (Fashion-MNIST), 04 MLP from
+scratch with hand backprop (Fashion-MNIST), 05 a GPT from scratch that learns 3-digit addition. Fewer auto-checks,
+more 🧪 open experiments and 🛠️ engineering habits (look at the data, split before preprocessing, baselines,
+step-0 loss, overfit one batch, causality test, error analysis). Added `src/mlj/datasets.py` (Pima, Fashion-MNIST,
+`prepare_pima`). Sources and builder in `05-explore/_build/`.
+**Understood:** Nothing yet: this was a build session, no exercises done.
+**Still shaky:** Everything from earlier entries is still open. 01–02 of the new series cover BCE, its gradient and
+the `log 2` initial loss (Q7, Q18); 04 covers backprop, softmax + CE gradient `P − Y` and init (Q14, Q16); 05 covers
+the causal mask and residuals (Q22, Q37–39).
+**Next:** `05-explore/01`, Part 1: before running `describe()`, write down which of the 8 columns *can* be 0.
+
+---
+
 ## 2026-11-22 — Plan reset and 04-practice notebooks
 **Did:** Reviewed the repo against the roadmap: nothing built since 26 Oct (`src/mlj/scratch/` empty, most
 `YOUR CODE HERE` blocks in `03-ens-intro-ml/` blank); theory studied through the ENS course instead. Added a second
